@@ -43,14 +43,14 @@ app.get("/image", async (req, res) => {
         const cvssScore = cvss[cvss.length - 1]?.metrics.baseScore;
         return { cveId: id, severity, description, score: cvssScore };
       });
+      // Delete the log file
+      await fs.unlink(`./scan-log/${uuid}.json`);
       // Send data to backend
-      await axios.post(`${process.env.API_URL}/image`, {
+      await axios.post(`${process.env.API_URL}/webhook/image`, {
         eventCode: "IMAGE_SCAN_COMPLETE",
         imageName: name,
         data: vulnerabilities,
       });
-      // Delete the log file
-      await fs.unlink(`./scan-log/${uuid}.json`);
     } catch (error) {
       console.log(error);
     }
