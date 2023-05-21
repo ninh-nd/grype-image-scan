@@ -3,6 +3,7 @@ const { spawn } = require("child_process");
 const crypto = require("crypto");
 const fs = require("fs/promises");
 const app = express();
+import axios from "axios";
 require("dotenv").config();
 const port = 3000;
 app.get("/image", (req, res) => {
@@ -39,16 +40,10 @@ app.get("/image", (req, res) => {
         return { cveId: id, severity, description, score: cvssScore };
       });
       // Send data to backend
-      await fetch(`${process.env.API_URL}/webhook/image`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          eventCode: "IMAGE_SCAN_COMPLETE",
-          imageName: name,
-          data: vulnerabilities,
-        }),
+      await axios.post(`${process.env.API_URL}/image`, {
+        eventCode: "IMAGE_SCAN_COMPLETE",
+        imageName: name,
+        data: vulnerabilities,
       });
       // Delete the log file
       await fs.unlink(`./scan-log/${uuid}.json`);
