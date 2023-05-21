@@ -27,6 +27,8 @@ app.get("/image", (req, res) => {
     console.log(`Child process exited with code ${code}`);
     // Process the output log
     try {
+      // Create a folder if it doesn't exist
+      await fs.mkdir("./scan-log", { recursive: true });
       const data = await fs.readFile(`./scan-log/${uuid}.json`, "utf8");
       const output = JSON.parse(data);
       const { matches } = output;
