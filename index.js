@@ -3,7 +3,7 @@ const { spawn } = require("child_process");
 const crypto = require("crypto");
 const fs = require("fs/promises");
 const app = express();
-import axios from "axios";
+const axios = require("axios");
 require("dotenv").config();
 const port = 3000;
 app.get("/image", (req, res) => {
