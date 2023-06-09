@@ -1,21 +1,21 @@
-const express = require("express");
-const { spawn } = require("child_process");
-const crypto = require("crypto");
-const fs = require("fs/promises");
+import express from "express";
+import { spawn } from "child_process";
+import { randomUUID } from "crypto";
+import "dotenv/config";
+import { mkdir, readFile, unlink } from "fs/promises";
+import axios from "axios";
 const app = express();
-const axios = require("axios");
-require("dotenv").config();
 const port = 3000;
 app.get("/image", async (req, res) => {
   const { name } = req.query; // Example: name=alpine:3.12
   if (!name) {
     return res.status(400).json({ error: "Missing image name" });
   }
-  const uuid = crypto.randomUUID();
+  const uuid = randomUUID();
   res.json({ message: `Scanning image ${name}` });
   try {
     // Create a folder if it doesn't exist
-    await fs.mkdir("./scan-log", { recursive: true });
+    await mkdir("./scan-log", { recursive: true });
   } catch (error) {
     console.log(error);
   }
@@ -34,7 +34,7 @@ app.get("/image", async (req, res) => {
     console.log(`Child process exited with code ${code}`);
     // Process the output log
     try {
-      const data = await fs.readFile(`./scan-log/${uuid}.json`, "utf8");
+      const data = await readFile(`./scan-log/${uuid}.json`, "utf8");
       const output = JSON.parse(data);
       const { matches } = output;
       const vulnerabilities = matches.map((match) => {
@@ -44,7 +44,7 @@ app.get("/image", async (req, res) => {
         return { cveId: id, severity, description, score: cvssScore };
       });
       // Delete the log file
-      await fs.unlink(`./scan-log/${uuid}.json`);
+      await unlink(`./scan-log/${uuid}.json`);
       // Send data to backend
       await axios.post(`${process.env.API_URL}/webhook/image`, {
         eventCode: "IMAGE_SCAN_COMPLETE",
